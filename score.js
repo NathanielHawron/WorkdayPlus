@@ -1,5 +1,1 @@
-let scoreButton = document.getElementById("ScoreEnable");
-
-scoreButton.onclick = ()=>{
-    alert("score");
-};
+console.log("score.js")

@@ -6,5 +6,15 @@
     "action":{
         "default_popup":"main.html",
         "default_icon":"favicon.png"
+    },
+    "content_scripts": [
+    {
+      "js": [
+        "score.js","calendar.js"
+      ],
+      "matches": [
+        "https://wd10.myworkday.com/ubc/d/*"
+      ]
     }
+  ]
 }
