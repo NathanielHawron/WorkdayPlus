@@ -16,5 +16,11 @@
         "https://wd10.myworkday.com/ubc/d/*"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["view/ui.js", "view/design.css"],
+      "matches": ["https://wd10.myworkday.com/*"]
+    }
   ]
 }

@@ -87,9 +87,9 @@ function calendar(){
     header.appendChild(title);
     header.appendChild(closeButton);
     
-    // Create calendar content area (for Person B to render into)
+    // Create calendar content area
     const calendarContent = document.createElement('div');
-    calendarContent.id = 'wdp-calendar-root';
+    calendarContent.id = 'enhanced-calendar-view';
     calendarContent.style.flex = '1';
     calendarContent.style.overflow = 'auto';
     calendarContent.style.padding = '20px';
@@ -111,12 +111,40 @@ function calendar(){
         }
     };
     
-    console.log("=== INFO FOR PERSON B ===");
-    console.log("Container ID: wdp-calendar-root");
-    console.log("Time range: 6am-11pm");
-    console.log("Popup is ready for rendering");
-    console.log("Original Workday calendar remains untouched");
     console.log("=== CALENDAR POPUP CREATED SUCCESSFULLY ===");
+    
+    // Load and inject the view CSS
+    const cssLink = document.createElement('link');
+    cssLink.rel = 'stylesheet';
+    cssLink.href = chrome.runtime.getURL('view/design.css');
+    document.head.appendChild(cssLink);
+    
+    // Dynamically import and render the calendar view
+    import(chrome.runtime.getURL('view/ui.js'))
+        .then(module => {
+            console.log("View module loaded successfully");
+            
+            // Sample course data for testing
+            const sampleCourseData = [
+                { title: 'COSC 101 - Intro to CS', location: 'ICCS 204', day: 'Mon', startTime: '09:00', duration: 90, week: 'All' },
+                { title: 'MATH 200 - Calculus', location: 'Math 100', day: 'Mon', startTime: '11:00', duration: 60, week: 'All' },
+                { title: 'COSC 221 - Data Structures', location: 'ICCS 204', day: 'Wed', startTime: '14:00', duration: 90, week: 'A' },
+                { title: 'STAT 230 - Statistics', location: 'Math 105', day: 'Fri', startTime: '10:00', duration: 60, week: 'B' }
+            ];
+            
+            // Render the calendar with sample data
+            module.renderCalendar(sampleCourseData, 'A'); // 'A' or 'B' for week type
+            
+            // Setup term tabs if needed
+            // module.setupTermTabs((term) => {
+            //     console.log("Term selected:", term);
+            //     // Handle term switching here
+            // });
+        })
+        .catch(error => {
+            console.error("Error loading view module:", error);
+            calendarContent.innerHTML = '<p style="color: red; padding: 20px;">Error loading calendar view</p>';
+        });
     
     } catch (error) {
         console.error("Error creating calendar popup:", error);

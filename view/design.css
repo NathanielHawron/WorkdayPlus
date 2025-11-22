@@ -1,4 +1,4 @@
-/* WorkdayPlus UI가 들어갈 메인 컨테이너 스타일 */
+/* Main container style for WorkdayPlus UI */
 #workdayPlus-calendar-enhancer {
     font-family: 'Segoe UI', Arial, sans-serif;
     padding: 10px;
@@ -6,7 +6,7 @@
     border-bottom: 1px solid #ddd;
 }
 
-/* 탭 버튼 영역 */
+/* Term tab button area */
 .term-tabs {
     display: flex;
     justify-content: center; 
@@ -14,7 +14,7 @@
     border-bottom: 2px solid #eee;
 }
 
-/* 개별 탭 버튼 스타일 */
+/* Individual tab button style */
 .term-tabs button {
     background: none;
     border: none;
@@ -26,29 +26,29 @@
     transition: color 0.2s, border-bottom 0.2s;
 }
 
-/* 활성(Active) 상태 탭 디자인 */
+/* Active tab design */
 .term-tabs button.active {
-    color: #007bff;
+    color: #007bff; /* Workday's primary blue color for emphasis */
     border-bottom: 2px solid #007bff;
 }
 
-/* 캘린더 테이블 기본 스타일 */
+/* Calendar table base style */
 .calendar-grid {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed; 
-    position: relative;
+    position: relative; /* Reference point for absolute positioning of course cells */
 }
 
-/* 헤더 및 셀 경계 */
+/* Header and cell borders */
 .calendar-grid th, .calendar-grid td {
     border: 1px solid #eee;
-    height: 60px;
+    height: 60px; /* 60px per hour - agreed height between CSS and JS */
     padding: 0;
     vertical-align: top;
 }
 
-/* 요일 헤더 디자인 */
+/* Day header design */
 .calendar-grid th {
     background-color: #f0f0f0;
     color: #333;
@@ -56,7 +56,7 @@
     padding: 8px 0;
 }
 
-/* 시간 라벨 디자인 */
+/* Time label design */
 .time-label {
     width: 60px; 
     padding: 5px;
@@ -68,18 +68,20 @@
     color: #888;
 }
 
-/* 수업 셀이 배치될 요일 셀 */
+/* Day cell where course cells will be positioned (Absolute Positioning reference) */
 .day-cell {
     position: relative; 
     height: auto; 
 }
 
-/* 수업 셀 기본 스타일 */
+/* Course cell base style */
 .course-cell {
+    /* Absolute Positioning: Float within day cell */
     position: absolute; 
     width: 98%; 
     left: 1%;
     z-index: 10; 
+    
     padding: 5px 8px;
     border-radius: 4px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
@@ -89,13 +91,13 @@
     overflow: hidden; 
 }
 
-/* 호버 효과 */
+/* Hover effect */
 .course-cell:hover {
     transform: translateY(-1px); 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 정보 위계 설정 */
+/* Information hierarchy */
 .course-code {
     font-weight: 700; 
     font-size: 13px;
@@ -106,59 +108,74 @@
     color: #666;
 }
 
-/* 학과별 색상 코딩 */
+/* Subject-specific color coding */
 .subj-COSC { 
     background-color: #e6f7ff; 
     border-left-color: #007bff; 
 } 
+/* DATA (Data Science) */
 .subj-DATA { 
     background-color: #fff3e0; 
     border-left-color: #ff9800; 
 }
+/* ENGR (Engineering) */
 .subj-ENGR { 
     background-color: #ffe0e6; 
     border-left-color: #e91e63; 
 }
+/* ELEC (Electrical Engineering) */
 .subj-ELEC { 
     background-color: #f3e5f5; 
     border-left-color: #9c27b0; 
 }
+
+/* MATH (Mathematics) */
 .subj-MATH { 
     background-color: #f0fff0; 
     border-left-color: #4CAF50; 
 }
+/* STAT (Statistics) */
 .subj-STAT { 
     background-color: #e8f5e9; 
     border-left-color: #8bc34a; 
 }
+/* PHYS (Physics) */
 .subj-PHYS { 
     background-color: #fbe9e7; 
     border-left-color: #ff5722; 
 }
+/* CHEM (Chemistry) */
 .subj-CHEM { 
     background-color: #e0f7fa; 
     border-left-color: #00bcd4; 
 }
+/* BIOL (Biology) */
 .subj-BIOL { 
     background-color: #fce4ec; 
     border-left-color: #e91e63; 
 }
+
+/* MGMT (Management) */
 .subj-MGMT { 
     background-color: #fffde7; 
     border-left-color: #ffeb3b; 
 }
+/* ECON (Economics) */
 .subj-ECON { 
     background-color: #f3e5f5; 
     border-left-color: #673ab7; 
 }
+/* PSYO (Psychology) */
 .subj-PSYO { 
     background-color: #fafafa; 
     border-left-color: #9e9e9e; 
 }
+/* SOCI (Sociology) */
 .subj-SOCI { 
     background-color: #f9fbe7; 
     border-left-color: #cddc39; 
 }
+/* ENGL (English) */
 .subj-ENGL { 
     background-color: #fbe0e6; 
     border-left-color: #f44336; 
