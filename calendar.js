@@ -1,5 +1,124 @@
-console.log("calendar");
+console.log("calendar.js loaded successfully");
+alert("WorkdayPlus: calendar.js loaded!");
 
 function calendar(){
-    console.log("Running calendar");
+    console.log("=== CALENDAR FUNCTION CALLED ===");
+    console.log("Running calendar - creating popup");
+    
+    try {
+    
+    // Check if popup already exists
+    if (document.getElementById('wdp-calendar-popup')) {
+        console.log("Calendar popup already open");
+        return;
+    }
+    
+    // Create popup overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'wdp-calendar-popup';
+    
+    // Overlay styling (full screen, centered)
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    overlay.style.zIndex = '999999';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    
+    // Create popup container
+    const popup = document.createElement('div');
+    popup.id = 'wdp-calendar-container';
+    
+    // Popup styling
+    popup.style.width = '90%';
+    popup.style.maxWidth = '1200px';
+    popup.style.height = '85%';
+    popup.style.backgroundColor = '#ffffff';
+    popup.style.borderRadius = '8px';
+    popup.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+    popup.style.display = 'flex';
+    popup.style.flexDirection = 'column';
+    popup.style.overflow = 'hidden';
+    
+    // Create header with close button
+    const header = document.createElement('div');
+    header.style.padding = '16px 20px';
+    header.style.borderBottom = '1px solid #e0e0e0';
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.backgroundColor = '#f5f5f5';
+    
+    const title = document.createElement('h2');
+    title.textContent = 'Weekly Calendar';
+    title.style.margin = '0';
+    title.style.fontSize = '20px';
+    title.style.fontWeight = '600';
+    title.style.color = '#333';
+    
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+    closeButton.style.border = 'none';
+    closeButton.style.background = 'none';
+    closeButton.style.fontSize = '24px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.color = '#666';
+    closeButton.style.padding = '0';
+    closeButton.style.width = '30px';
+    closeButton.style.height = '30px';
+    closeButton.style.borderRadius = '4px';
+    closeButton.style.transition = 'background-color 0.2s';
+    
+    closeButton.onmouseover = () => {
+        closeButton.style.backgroundColor = '#e0e0e0';
+    };
+    closeButton.onmouseout = () => {
+        closeButton.style.backgroundColor = 'transparent';
+    };
+    closeButton.onclick = () => {
+        document.body.removeChild(overlay);
+        console.log("Calendar popup closed");
+    };
+    
+    header.appendChild(title);
+    header.appendChild(closeButton);
+    
+    // Create calendar content area (for Person B to render into)
+    const calendarContent = document.createElement('div');
+    calendarContent.id = 'wdp-calendar-root';
+    calendarContent.style.flex = '1';
+    calendarContent.style.overflow = 'auto';
+    calendarContent.style.padding = '20px';
+    calendarContent.style.backgroundColor = '#ffffff';
+    
+    // Assemble popup
+    popup.appendChild(header);
+    popup.appendChild(calendarContent);
+    overlay.appendChild(popup);
+    
+    // Add to page
+    document.body.appendChild(overlay);
+    
+    // Close on overlay click (but not popup click)
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+            console.log("Calendar popup closed");
+        }
+    };
+    
+    console.log("=== INFO FOR PERSON B ===");
+    console.log("Container ID: wdp-calendar-root");
+    console.log("Time range: 6am-11pm");
+    console.log("Popup is ready for rendering");
+    console.log("Original Workday calendar remains untouched");
+    console.log("=== CALENDAR POPUP CREATED SUCCESSFULLY ===");
+    
+    } catch (error) {
+        console.error("Error creating calendar popup:", error);
+    }
 }
