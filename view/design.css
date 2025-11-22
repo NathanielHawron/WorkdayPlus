@@ -1,0 +1,165 @@
+/* WorkdayPlus UI가 들어갈 메인 컨테이너 스타일 */
+#workdayPlus-calendar-enhancer {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    padding: 10px;
+    background-color: #ffffff; 
+    border-bottom: 1px solid #ddd;
+}
+
+/* 탭 버튼 영역 */
+.term-tabs {
+    display: flex;
+    justify-content: center; 
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+/* 개별 탭 버튼 스타일 */
+.term-tabs button {
+    background: none;
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    transition: color 0.2s, border-bottom 0.2s;
+}
+
+/* 활성(Active) 상태 탭 디자인 */
+.term-tabs button.active {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+}
+
+/* 캘린더 테이블 기본 스타일 */
+.calendar-grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; 
+    position: relative;
+}
+
+/* 헤더 및 셀 경계 */
+.calendar-grid th, .calendar-grid td {
+    border: 1px solid #eee;
+    height: 60px;
+    padding: 0;
+    vertical-align: top;
+}
+
+/* 요일 헤더 디자인 */
+.calendar-grid th {
+    background-color: #f0f0f0;
+    color: #333;
+    text-align: center;
+    padding: 8px 0;
+}
+
+/* 시간 라벨 디자인 */
+.time-label {
+    width: 60px; 
+    padding: 5px;
+    background-color: #fdfdfd;
+    font-weight: 500;
+    text-align: right;
+    vertical-align: top;
+    font-size: 11px;
+    color: #888;
+}
+
+/* 수업 셀이 배치될 요일 셀 */
+.day-cell {
+    position: relative; 
+    height: auto; 
+}
+
+/* 수업 셀 기본 스타일 */
+.course-cell {
+    position: absolute; 
+    width: 98%; 
+    left: 1%;
+    z-index: 10; 
+    padding: 5px 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+    color: #333;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    overflow: hidden; 
+}
+
+/* 호버 효과 */
+.course-cell:hover {
+    transform: translateY(-1px); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 정보 위계 설정 */
+.course-code {
+    font-weight: 700; 
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+.course-location {
+    font-size: 10px;
+    color: #666;
+}
+
+/* 학과별 색상 코딩 */
+.subj-COSC { 
+    background-color: #e6f7ff; 
+    border-left-color: #007bff; 
+} 
+.subj-DATA { 
+    background-color: #fff3e0; 
+    border-left-color: #ff9800; 
+}
+.subj-ENGR { 
+    background-color: #ffe0e6; 
+    border-left-color: #e91e63; 
+}
+.subj-ELEC { 
+    background-color: #f3e5f5; 
+    border-left-color: #9c27b0; 
+}
+.subj-MATH { 
+    background-color: #f0fff0; 
+    border-left-color: #4CAF50; 
+}
+.subj-STAT { 
+    background-color: #e8f5e9; 
+    border-left-color: #8bc34a; 
+}
+.subj-PHYS { 
+    background-color: #fbe9e7; 
+    border-left-color: #ff5722; 
+}
+.subj-CHEM { 
+    background-color: #e0f7fa; 
+    border-left-color: #00bcd4; 
+}
+.subj-BIOL { 
+    background-color: #fce4ec; 
+    border-left-color: #e91e63; 
+}
+.subj-MGMT { 
+    background-color: #fffde7; 
+    border-left-color: #ffeb3b; 
+}
+.subj-ECON { 
+    background-color: #f3e5f5; 
+    border-left-color: #673ab7; 
+}
+.subj-PSYO { 
+    background-color: #fafafa; 
+    border-left-color: #9e9e9e; 
+}
+.subj-SOCI { 
+    background-color: #f9fbe7; 
+    border-left-color: #cddc39; 
+}
+.subj-ENGL { 
+    background-color: #fbe0e6; 
+    border-left-color: #f44336; 
+}
