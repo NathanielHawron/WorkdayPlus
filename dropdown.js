@@ -11,6 +11,8 @@ score.onclick = async ()=>{
 calendar.onclick = async ()=>{
     let [tab] = await chrome.tabs.query({active:true, currentWindow:true});
     chrome.tabs.sendMessage(tab.id, {action:"calendar"}, (res)=>{
-        alert(res);
+        if(res && res.status){
+            console.log("Calendar opened:", res.status);
+        }
     })
 }
