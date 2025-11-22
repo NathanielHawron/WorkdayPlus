@@ -132,14 +132,20 @@ function calendar(){
                 { title: 'STAT 230 - Statistics', location: 'Math 105', day: 'Fri', startTime: '10:00', duration: 60, week: 'B' }
             ];
             
-            // Render the calendar with sample data
-            module.renderCalendar(sampleCourseData, 'A'); // 'A' or 'B' for week type
+            // Current state
+            let currentTerm = 'term1';
+            let currentWeek = 'A';
             
-            // Setup term tabs if needed
-            // module.setupTermTabs((term) => {
-            //     console.log("Term selected:", term);
-            //     // Handle term switching here
-            // });
+            // Render the calendar with sample data
+            module.renderCalendar(sampleCourseData, currentWeek);
+            
+            // Setup term tabs
+            module.setupTermTabs((term) => {
+                console.log("Term selected:", term);
+                currentTerm = term;
+                // Re-render with new term data (for now using same sample data)
+                module.renderCalendar(sampleCourseData, currentWeek);
+            });
         })
         .catch(error => {
             console.error("Error loading view module:", error);

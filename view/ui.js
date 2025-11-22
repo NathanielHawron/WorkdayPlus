@@ -40,8 +40,8 @@ function createCourseCellHTML(course) {
     const heightInPixels = course.duration || 60; 
 
     // 3. Generate Inline Style (Crucial for absolute positioning)
-    // -2px creates a small separation gap between cells.
-    const inlineStyle = `top: ${topOffset}px; height: ${heightInPixels - 2}px;`; 
+    // -4px creates a small separation gap between cells and prevents overflow
+    const inlineStyle = `top: ${topOffset}px; height: ${heightInPixels - 4}px; max-height: ${heightInPixels - 4}px;`; 
 
     return `
         <div class="course-cell ${subjectClass}" style="${inlineStyle}">
@@ -57,7 +57,12 @@ function createCourseCellHTML(course) {
 function createCalendarGridHTML() {
     const daysOfWeek = Object.keys(DAY_MAP); 
 
-    let html = '<table class="calendar-grid"><tbody>';
+    let html = '<div class="term-tabs">';
+    html += '<button id="term1-tab" class="active" data-term="term1">Term 1</button>';
+    html += '<button id="term2-tab" data-term="term2">Term 2</button>';
+    html += '</div>';
+    
+    html += '<table class="calendar-grid"><tbody>';
     
     // 1. Day Header Row
     html += '<tr><th class="time-label-header">Time</th>';
