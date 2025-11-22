@@ -3,8 +3,10 @@
     "description":"Fixes workday calendar and shows UBCgrades and RMP data",
     "version":"0.0.0",
     "manifest_version":3,
+    
     "action":{
         "default_popup":"main.html",
         "default_icon":"favicon.png"
     }
+    
 }
