@@ -1,5 +1,5 @@
-let calendarButton = document.getElementById("CalendarEnable");
+console.log("calendar");
 
-calendarButton.onclick = ()=>{
-    alert("Calendar");
-};
+function calendar(){
+    console.log("Running calendar");
+}

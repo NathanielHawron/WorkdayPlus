@@ -1,4 +1,4 @@
-let scoreButton = document.getElementById("ScoreEnable");
+console.log("score.js")
 
 scoreButton.onclick = ()=>{
     getDataRMP();
