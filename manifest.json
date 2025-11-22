@@ -10,7 +10,7 @@
     "content_scripts": [
     {
       "js": [
-        "score.js","calendar.js"
+        "score.js","calendar.js","comm.js"
       ],
       "matches": [
         "https://wd10.myworkday.com/ubc/d/*"
