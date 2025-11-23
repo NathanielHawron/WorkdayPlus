@@ -1,5 +1,4 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("test");
     if(message.action == "score"){
         score();
     }
