@@ -38,11 +38,11 @@ function score(){
                 
                     if(data.summer != null){
                         let dataS = data.summer;
-                        dataStringS = "Average: " + dataS.average + " Median: " + dataS.median + " Range: [" + dataS.low + ", " + dataS.high + "] Fail Rate: " + dataS.grades["<50%"] + "/" + dataS.reported + " (" + Math.round(100.0 * dataS.grades["<50%"] / dataS.reported) + "%)";
+                        dataStringS = "Year: " + dataS.year + " Average: " + dataS.average + " Median: " + dataS.median + " Range: [" + dataS.low + ", " + dataS.high + "] Fail Rate: " + dataS.grades["<50%"] + "/" + dataS.reported + " (" + Math.round(100.0 * dataS.grades["<50%"] / dataS.reported) + "%)";
                     }
                     if(data.winter != null){
                         let dataW = data.winter;
-                        dataStringW = "Average: " + dataW.average + " Median: " + dataW.median + " Range: [" + dataW.low + ", " + dataW.high + "] Fail Rate: " + dataW.grades["<50%"] + "/" + dataW.reported + " (" + Math.round(100.0 * dataW.grades["<50%"] / dataW.reported) + "%)";
+                        dataStringW = "Year: " + dataW.year + " Average: " + dataW.average + " Median: " + dataW.median + " Range: [" + dataW.low + ", " + dataW.high + "] Fail Rate: " + dataW.grades["<50%"] + "/" + dataW.reported + " (" + Math.round(100.0 * dataW.grades["<50%"] / dataW.reported) + "%)";
                     }
         
                     if(data.summer != null){
