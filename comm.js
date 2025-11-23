@@ -1,0 +1,33 @@
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("=== MESSAGE RECEIVED ===", message);
+    
+    if(message.action == "score"){
+        console.log("Calling score()");
+        score();
+        sendResponse({"status":"score enabled"});
+    }
+    
+    if(message.action == "calendar"){
+        console.log("Calling calendar()");
+        if (typeof calendar === 'function') {
+            calendar();
+            sendResponse({"status":"calendar opened"});
+        } else {
+            console.error("calendar function not found!");
+            sendResponse({"status":"error", "message":"calendar function not found"});
+        }
+    }
+    
+    if(message.action == "registrationGuide"){
+        console.log("Calling registrationGuide()");
+        if (typeof registrationGuide === 'function') {
+            registrationGuide();
+            sendResponse({"status":"registration guide opened"});
+        } else {
+            console.error("registrationGuide function not found!");
+            sendResponse({"status":"error", "message":"registrationGuide function not found"});
+        }
+    }
+    
+    return true; // Keep message channel open for async response
+});

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Integration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.danger {
+            background-color: #dc3545;
+        }
+        button.danger:hover {
+            background-color: #c82333;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        #console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .console-line {
+            margin: 2px 0;
+        }
+        .console-error {
+            color: #f48771;
+        }
+        .console-warn {
+            color: #dcdcaa;
+        }
+        .console-info {
+            color: #4fc1ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Calendar Integration End-to-End Tests</h1>
+    
+    <div class="test-section">
+        <h2>Test Setup</h2>
+        <p class="test-description">
+            These tests verify the calendar integration functionality. Click each test button to run the corresponding test scenario.
+        </p>
+        <button onclick="clearConsole()">Clear Console</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+        <div id="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Test Popup Opens and Displays Styled Calendar</h2>
+        <p class="test-description">
+            Verifies that the calendar popup opens correctly with proper styling and structure.
+        </p>
+        <button onclick="testPopupOpens()">Run Test</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Course Cells Appear at Correct Positions</h2>
+        <p class="test-description">
+            Verifies that course cells are positioned correctly based on their start times and durations.
+        </p>
+        <button onclick="setupTestData()">Setup Test Data</button>
+        <button onclick="testCoursePositions()">Run Test</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Term Switching Updates the View</h2>
+        <p class="test-description">
+            Verifies that clicking term tabs switches between Term 1 and Term 2 data.
+        </p>
+        <button onclick="setupTestData()">Setup Test Data</button>
+        <button onclick="testTermSwitching()">Run Test</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Various Course Data Scenarios</h2>
+        <p class="test-description">
+            Tests different data scenarios: empty data, single term, both terms.
+        </p>
+        <button onclick="testEmptyData()">Test Empty Data</button>
+        <button onclick="testSingleTerm()">Test Single Term</button>
+        <button onclick="testBothTerms()">Test Both Terms</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test Error Scenarios</h2>
+        <p class="test-description">
+            Tests error handling: no data, invalid data, missing resources.
+        </p>
+        <button onclick="testNoData()">Test No Data</button>
+        <button onclick="testInvalidData()">Test Invalid Data</button>
+        <button onclick="testMissingSchedule()">Test Missing Schedule</button>
+        <div id="test5-result"></div>
+    </div>
+
+    <script>
+        // Mock chrome API for testing
+        if (typeof chrome === 'undefined') {
+            window.chrome = {
+                storage: {
+                    local: {
+                        data: {},
+                        get: function(key) {
+                            return Promise.resolve({ [key]: this.data[key] });
+                        },
+                        set: function(obj) {
+                            Object.assign(this.data, obj);
+                            return Promise.resolve();
+                        },
+                        clear: function() {
+                            this.data = {};
+                            return Promise.resolve();
+                        }
+                    }
+                },
+                runtime: {
+                    getURL: function(path) {
+                        return path;
+                    }
+                }
+            };
+        }
+
+        // Console capture
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+
+        function captureConsole() {
+            const output = document.getElementById('console-output');
+            
+            console.log = function(...args) {
+                originalConsole.log.apply(console, args);
+                addConsoleLine('log', args.join(' '));
+            };
+            
+            console.error = function(...args) {
+                originalConsole.error.apply(console, args);
+                addConsoleLine('error', args.join(' '));
+            };
+            
+            console.warn = function(...args) {
+                originalConsole.warn.apply(console, args);
+                addConsoleLine('warn', args.join(' '));
+            };
+            
+            console.info = function(...args) {
+                originalConsole.info.apply(console, args);
+                addConsoleLine('info', args.join(' '));
+            };
+        }
+
+        function addConsoleLine(type, message) {
+            const output = document.getElementById('console-output');
+            const line = document.createElement('div');
+            line.className = `console-line console-${type}`;
+            line.textContent = `[${type.toUpperCase()}] ${message}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        function clearStorage() {
+            chrome.storage.local.clear();
+            showResult('test1-result', 'Storage cleared', 'info');
+        }
+
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('wdp-calendar-popup');
+            if (popup) {
+                popup.remove();
+            }
+        }
+
+        // Sample test data
+        function getSampleCourseData() {
+            return {
+                term1: [
+                    {
+                        courseName: "Introduction to Computer Science",
+                        courseCode: "COSC 101",
+                        startDate: "2024-09-03",
+                        endDate: "2024-12-15",
+                        instructor: "Dr. Smith",
+                        location: "Room 201",
+                        schedule: "MWF 10:00-11:00"
+                    },
+                    {
+                        courseName: "Data Structures",
+                        courseCode: "DATA 201",
+                        startDate: "2024-09-03",
+                        endDate: "2024-12-15",
+                        instructor: "Dr. Johnson",
+                        location: "Lab 305",
+                        schedule: "TR 14:00-15:30"
+                    }
+                ],
+                term2: [
+                    {
+                        courseName: "Algorithms",
+                        courseCode: "COSC 301",
+                        startDate: "2025-01-06",
+                        endDate: "2025-04-15",
+                        instructor: "Dr. Williams",
+                        location: "Room 102",
+                        schedule: "MWF 09:00-10:00"
+                    }
+                ],
+                metadata: {
+                    extractedAt: new Date().toISOString(),
+                    totalCourses: 3,
+                    termBoundaryDate: "2024-12-31"
+                }
+            };
+        }
+
+        async function setupTestData() {
+            const data = getSampleCourseData();
+            await chrome.storage.local.set({ workdayPlusCourseData: data });
+            showResult('test2-result', 'Test data loaded successfully', 'success');
+        }
+
+        // Test 1: Popup opens and displays styled calendar
+        async function testPopupOpens() {
+            try {
+                closePopup();
+                await setupTestData();
+                
+                // Simulate calendar function call
+                console.log('Testing popup creation...');
+                
+                // Check if calendar function exists
+                if (typeof calendar !== 'function') {
+                    showResult('test1-result', 'ERROR: calendar() function not found. Make sure calendar.js is loaded.', 'error');
+                    return;
+                }
+                
+                // Call calendar function
+                calendar();
+                
+                // Wait for popup to be created
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Verify popup exists
+                const popup = document.getElementById('wdp-calendar-popup');
+                if (!popup) {
+                    showResult('test1-result', 'FAIL: Popup not created', 'error');
+                    return;
+                }
+                
+                // Verify structure
+                const container = document.getElementById('wdp-calendar-container');
+                const calendarView = document.getElementById('enhanced-calendar-view');
+                const term1Tab = document.getElementById('term1-tab');
+                const term2Tab = document.getElementById('term2-tab');
+                
+                const checks = [
+                    { name: 'Popup overlay', element: popup },
+                    { name: 'Calendar container', element: container },
+                    { name: 'Calendar view', element: calendarView },
+                    { name: 'Term 1 tab', element: term1Tab },
+                    { name: 'Term 2 tab', element: term2Tab }
+                ];
+                
+                const results = checks.map(check => 
+                    `${check.element ? '✓' : '✗'} ${check.name}`
+                ).join('<br>');
+                
+                const allPassed = checks.every(check => check.element);
+                
+                showResult('test1-result', 
+                    `<strong>${allPassed ? 'PASS' : 'FAIL'}</strong><br>${results}`,
+                    allPassed ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test1-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 2: Course cells appear at correct positions
+        async function testCoursePositions() {
+            try {
+                closePopup();
+                await setupTestData();
+                
+                console.log('Testing course cell positions...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test2-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                
+                // Wait for rendering
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Check for course cells
+                const courseCells = document.querySelectorAll('.course-cell');
+                
+                if (courseCells.length === 0) {
+                    showResult('test2-result', 'FAIL: No course cells found', 'error');
+                    return;
+                }
+                
+                let results = `Found ${courseCells.length} course cell(s)<br><br>`;
+                
+                courseCells.forEach((cell, index) => {
+                    const style = window.getComputedStyle(cell);
+                    const top = cell.style.top;
+                    const height = cell.style.height;
+                    const courseCode = cell.querySelector('.course-code')?.textContent;
+                    const location = cell.querySelector('.course-location')?.textContent;
+                    
+                    results += `Cell ${index + 1}:<br>`;
+                    results += `  - Code: ${courseCode}<br>`;
+                    results += `  - Location: ${location}<br>`;
+                    results += `  - Position: top=${top}, height=${height}<br>`;
+                    results += `  - Has positioning: ${style.position === 'absolute' ? '✓' : '✗'}<br><br>`;
+                });
+                
+                showResult('test2-result', results, 'success');
+                
+            } catch (error) {
+                showResult('test2-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 3: Term switching
+        async function testTermSwitching() {
+            try {
+                closePopup();
+                await setupTestData();
+                
+                console.log('Testing term switching...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test3-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                
+                // Wait for initial render
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const term1Tab = document.getElementById('term1-tab');
+                const term2Tab = document.getElementById('term2-tab');
+                
+                if (!term1Tab || !term2Tab) {
+                    showResult('test3-result', 'FAIL: Term tabs not found', 'error');
+                    return;
+                }
+                
+                // Check initial state (Term 1 should be active)
+                const initialActive = term1Tab.classList.contains('active');
+                
+                // Click Term 2
+                term2Tab.click();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const term2Active = term2Tab.classList.contains('active');
+                const term1Inactive = !term1Tab.classList.contains('active');
+                
+                // Click Term 1 again
+                term1Tab.click();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const term1ActiveAgain = term1Tab.classList.contains('active');
+                
+                const results = [
+                    `${initialActive ? '✓' : '✗'} Term 1 initially active`,
+                    `${term2Active ? '✓' : '✗'} Term 2 becomes active on click`,
+                    `${term1Inactive ? '✓' : '✗'} Term 1 becomes inactive`,
+                    `${term1ActiveAgain ? '✓' : '✗'} Term 1 active again after click`
+                ].join('<br>');
+                
+                const allPassed = initialActive && term2Active && term1Inactive && term1ActiveAgain;
+                
+                showResult('test3-result',
+                    `<strong>${allPassed ? 'PASS' : 'FAIL'}</strong><br>${results}`,
+                    allPassed ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test3-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 4a: Empty data
+        async function testEmptyData() {
+            try {
+                closePopup();
+                await chrome.storage.local.set({ 
+                    workdayPlusCourseData: { term1: [], term2: [] } 
+                });
+                
+                console.log('Testing empty data scenario...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test4-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const calendarView = document.getElementById('enhanced-calendar-view');
+                const hasEmptyMessage = calendarView && calendarView.textContent.includes('No Courses');
+                
+                showResult('test4-result',
+                    `Empty Data Test: ${hasEmptyMessage ? '✓ PASS' : '✗ FAIL'}<br>` +
+                    `Expected empty state message, ${hasEmptyMessage ? 'found' : 'not found'}`,
+                    hasEmptyMessage ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test4-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 4b: Single term
+        async function testSingleTerm() {
+            try {
+                closePopup();
+                const data = getSampleCourseData();
+                data.term2 = []; // Empty term 2
+                await chrome.storage.local.set({ workdayPlusCourseData: data });
+                
+                console.log('Testing single term scenario...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test4-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const courseCells = document.querySelectorAll('.course-cell');
+                const hasCourses = courseCells.length > 0;
+                
+                showResult('test4-result',
+                    `Single Term Test: ${hasCourses ? '✓ PASS' : '✗ FAIL'}<br>` +
+                    `Found ${courseCells.length} course(s) in Term 1`,
+                    hasCourses ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test4-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 4c: Both terms
+        async function testBothTerms() {
+            try {
+                closePopup();
+                await setupTestData();
+                
+                console.log('Testing both terms scenario...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test4-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Check Term 1
+                let courseCells = document.querySelectorAll('.course-cell');
+                const term1Count = courseCells.length;
+                
+                // Switch to Term 2
+                const term2Tab = document.getElementById('term2-tab');
+                if (term2Tab) {
+                    term2Tab.click();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    courseCells = document.querySelectorAll('.course-cell');
+                    const term2Count = courseCells.length;
+                    
+                    showResult('test4-result',
+                        `Both Terms Test: ${(term1Count > 0 && term2Count > 0) ? '✓ PASS' : '✗ FAIL'}<br>` +
+                        `Term 1: ${term1Count} course(s)<br>` +
+                        `Term 2: ${term2Count} course(s)`,
+                        (term1Count > 0 && term2Count > 0) ? 'success' : 'error'
+                    );
+                } else {
+                    showResult('test4-result', 'FAIL: Term 2 tab not found', 'error');
+                }
+                
+            } catch (error) {
+                showResult('test4-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 5a: No data
+        async function testNoData() {
+            try {
+                closePopup();
+                await chrome.storage.local.clear();
+                
+                console.log('Testing no data scenario...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test5-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const placeholder = document.getElementById('calendar-placeholder');
+                const hasMessage = placeholder && placeholder.textContent.includes('No Course Data');
+                
+                showResult('test5-result',
+                    `No Data Test: ${hasMessage ? '✓ PASS' : '✗ FAIL'}<br>` +
+                    `Expected "No Course Data" message, ${hasMessage ? 'found' : 'not found'}`,
+                    hasMessage ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test5-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 5b: Invalid data
+        async function testInvalidData() {
+            try {
+                closePopup();
+                await chrome.storage.local.set({ 
+                    workdayPlusCourseData: { 
+                        term1: [
+                            { courseName: "Invalid Course" } // Missing required fields
+                        ],
+                        term2: []
+                    } 
+                });
+                
+                console.log('Testing invalid data scenario...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test5-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const courseCells = document.querySelectorAll('.course-cell');
+                const handledGracefully = courseCells.length === 0;
+                
+                showResult('test5-result',
+                    `Invalid Data Test: ${handledGracefully ? '✓ PASS' : '✗ FAIL'}<br>` +
+                    `Invalid course was ${handledGracefully ? 'skipped' : 'not handled properly'}`,
+                    handledGracefully ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test5-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Test 5c: Missing schedule
+        async function testMissingSchedule() {
+            try {
+                closePopup();
+                await chrome.storage.local.set({ 
+                    workdayPlusCourseData: { 
+                        term1: [
+                            {
+                                courseName: "Test Course",
+                                courseCode: "TEST 101",
+                                location: "Room 101"
+                                // Missing schedule field
+                            }
+                        ],
+                        term2: []
+                    } 
+                });
+                
+                console.log('Testing missing schedule scenario...');
+                
+                if (typeof calendar !== 'function') {
+                    showResult('test5-result', 'ERROR: calendar() function not found', 'error');
+                    return;
+                }
+                
+                calendar();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const courseCells = document.querySelectorAll('.course-cell');
+                const handledGracefully = courseCells.length === 0;
+                
+                showResult('test5-result',
+                    `Missing Schedule Test: ${handledGracefully ? '✓ PASS' : '✗ FAIL'}<br>` +
+                    `Course with missing schedule was ${handledGracefully ? 'skipped' : 'not handled properly'}`,
+                    handledGracefully ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                showResult('test5-result', `ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Initialize console capture
+        captureConsole();
+        
+        console.log('Calendar Integration Test Suite Loaded');
+        console.log('Note: Make sure calendar.js is loaded before running tests');
+    </script>
+    
+    <!-- Load calendar.js for testing -->
+    <script src="calendar.js"></script>
+</body>
+</html>
