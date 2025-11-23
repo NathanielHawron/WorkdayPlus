@@ -5,8 +5,8 @@ const PIXELS_PER_HOUR = 60;
 
 // Day mapping (Simplified for English output)
 const DAY_MAP = { 'Mon': 'Mon', 'Tue': 'Tue', 'Wed': 'Wed', 'Thu': 'Thu', 'Fri': 'Fri' };
-// Hours to display in the grid (0 to 23)
-const DISPLAY_HOURS = Array.from({ length: 24 }, (_, i) => i); 
+// Hours to display in the grid (7am to 10pm)
+const DISPLAY_HOURS = Array.from({ length: 16 }, (_, i) => i + 7); 
 
 
 /**
@@ -121,30 +121,40 @@ function getSubjectColor(subjectCode) {
  * Generates the HTML string for a single course cell, applying dynamic styling (position and color).
  * Flexible to handle various data formats from Workday parsing
  */
-function createCourseCellHTML(course) {
+function createCourseCellHTML(course, offsetWithinHour = 0) {
     // 1. Extract Subject Code for CSS color-coding (e.g., "COSC" from "COSC 101 Lab")
     const title = course.title || course.name || 'Unknown Course';
     const subjectCode = extractSubjectCode(title);
     const subjectClass = `subj-${subjectCode}`; 
 
-    // 2. Calculate Position and Height
+    // 2. Calculate Height
     const startTime = course.startTime || course.time || '09:00';
-    const topOffset = calculatePixelOffset(startTime); 
     const heightInPixels = course.duration || 60; 
 
     // 3. Get color for this subject (predefined or random)
     const color = getSubjectColor(subjectCode);
 
     // 4. Extract display information
-    const displayTitle = title.split(' - ')[0]; // "COSC 101 - Intro to CS" -> "COSC 101"
-    const rawLocation = course.location || course.room || '';
+    let displayTitle = title.split(' - ')[0]; // "COSC 101 - Intro to CS" -> "COSC 101"
+    // Remove UBCO from title if present
+    displayTitle = displayTitle.replace(/UBCO/gi, '');
+    
+    let rawLocation = course.location || course.room || '';
+    
+    // Remove "UBCO" from location (UBCOFIP 133 -> FIP 133)
+    rawLocation = rawLocation.replace(/UBCO/gi, '');
     
     // Simplify location: "Engineering, Management and Education Building (EME) Room: 1151" -> "EME 1151"
-    let shortLocation = rawLocation;
+    let shortLocation = rawLocation.trim();
     const buildingMatch = rawLocation.match(/\(([A-Z]+)\)\s*Room:\s*(\S+)/);
     if (buildingMatch) {
         shortLocation = `${buildingMatch[1]} ${buildingMatch[2]}`;
     }
+    
+    // Get instructional format (Lecture, Lab, Tutorial, etc.)
+    let instructionalFormat = course.format || course.instructionalFormat || '';
+    // Remove UBCO from format if present
+    instructionalFormat = instructionalFormat.replace(/UBCO/gi, '');
     
     // Calculate end time
     const [startHour, startMin] = startTime.split(':').map(Number);
@@ -155,12 +165,16 @@ function createCourseCellHTML(course) {
     const timeRange = `${startTime}-${endTime}`;
 
     // 5. Generate Inline Style (Crucial for absolute positioning)
-    // Match exactly with grid cell size (60px per hour)
-    const inlineStyle = `top: ${topOffset}px; height: ${heightInPixels}px; max-height: ${heightInPixels}px; background-color: ${color.bg}; border-left-color: ${color.border};`; 
+    // Position within the hour cell (0-60 pixels based on minutes)
+    const inlineStyle = `top: ${offsetWithinHour}px; height: ${heightInPixels}px; max-height: ${heightInPixels}px; background-color: ${color.bg}; border-left-color: ${color.border};`; 
 
+    // Create tooltip with clean information
+    const tooltipText = `${displayTitle}${instructionalFormat ? ' - ' + instructionalFormat : ''}\n${shortLocation}\n${timeRange}`;
+    
     return `
-        <div class="course-cell ${subjectClass}" style="${inlineStyle}">
+        <div class="course-cell ${subjectClass}" style="${inlineStyle}" title="${tooltipText}">
             <div class="course-code">${displayTitle}</div>
+            ${instructionalFormat ? `<div class="course-format">${instructionalFormat}</div>` : ''}
             <div class="course-location">${shortLocation}</div>
             <div class="course-time">${timeRange}</div>
         </div>
@@ -203,7 +217,8 @@ function createCalendarGridHTML(activeTerm = 'term1') {
         
         daysOfWeek.forEach(day => {
             // Container where courses are placed using absolute positioning.
-            html += `<td class="day-cell" id="day-${day}"></td>`; 
+            // Each cell has unique ID with day and hour
+            html += `<td class="day-cell" id="day-${day}-${hour}" data-day="${day}" data-hour="${hour}"></td>`; 
         });
         html += '</tr>';
     });
@@ -245,13 +260,26 @@ export function renderCalendar(courseData, currentWeek, activeTerm = 'term1') {
             const courseWeek = course.week || 'All';
             
             if (courseWeek === 'All' || courseWeek === currentWeek) {
-                const dayCellId = `day-${course.day}`; 
+                // Get the start hour for this course
+                const startTime = course.startTime || course.time || '09:00';
+                const [startHour, startMinutes] = startTime.split(':').map(Number);
+                const duration = course.duration || 60;
+                
+                // Calculate how many hour cells this course spans
+                const totalMinutes = startMinutes + duration;
+                const hoursSpanned = Math.ceil(totalMinutes / 60);
+                
+                // For courses spanning multiple hours, we need to place them in the starting hour cell
+                // but make them tall enough to extend into subsequent cells
+                const dayCellId = `day-${course.day}-${startHour}`; 
                 const dayContainer = document.getElementById(dayCellId);
                 
-                console.log(`Course: ${course.title}, Day: ${course.day}, Cell ID: ${dayCellId}, Found: ${!!dayContainer}`);
+                console.log(`Course: ${course.title}, Day: ${course.day}, Time: ${startTime}, Duration: ${duration}min, Spans: ${hoursSpanned} hours, Cell ID: ${dayCellId}, Found: ${!!dayContainer}`);
                 
                 if (dayContainer) {
-                    const courseHTML = createCourseCellHTML(course);
+                    // Calculate offset within the hour cell (0-60 pixels)
+                    const offsetWithinHour = startMinutes;
+                    const courseHTML = createCourseCellHTML(course, offsetWithinHour);
                     dayContainer.innerHTML += courseHTML; 
                 } else {
                     console.error(`Day container not found for: ${dayCellId}`);

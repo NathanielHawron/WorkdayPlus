@@ -45,6 +45,7 @@
                 let courseName = '';
                 let schedule = '';
                 let location = '';
+                let instructionalFormat = '';
                 let startDate = '';
                 let endDate = '';
                 
@@ -82,9 +83,13 @@
                     return;
                 }
                 
-                // Parse schedule to extract location
+                // Parse schedule to extract location and instructional format
                 if (schedule) {
                     const parts = schedule.split('|').map(p => p.trim());
+                    // Format: "2025-09-02 - 2025-11-05 | Mon Wed | 12:30 p.m. - 2:00 p.m. | Lecture | Science Building (SCI) | ... | Room: 123"
+                    if (parts.length >= 4) {
+                        instructionalFormat = parts[3]; // "Lecture", "Laboratory", "Tutorial", etc.
+                    }
                     if (parts.length >= 5) {
                         const building = parts[4]; // "Science Building (SCI)"
                         const room = parts.length >= 7 ? parts[6].replace('Room: ', '') : '';
@@ -108,6 +113,7 @@
                     courseName,
                     schedule: normalizedSchedule,
                     location,
+                    instructionalFormat,
                     instructor: 'TBA',
                     startDate,
                     endDate

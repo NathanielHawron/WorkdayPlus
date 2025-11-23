@@ -133,7 +133,9 @@ function calendar(){
         .course-cell { position: absolute; width: calc(100% - 6px); left: 3px; z-index: 10; padding: 6px 8px; border-radius: 4px; border-left: 4px solid; box-shadow: 0 1px 3px rgba(0,0,0,0.15); color: #333; cursor: pointer; box-sizing: border-box; }
         .course-cell:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .course-code { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+        .course-format { font-size: 10px; color: #888; font-style: italic; margin-bottom: 2px; }
         .course-location { font-size: 11px; color: #666; }
+        .course-time { font-size: 10px; color: #888; margin-top: 2px; }
         .subj-COSC { background-color: #e6f7ff; border-left-color: #007bff; }
         .subj-DATA { background-color: #fff3e0; border-left-color: #ff9800; }
         .subj-MATH { background-color: #f0fff0; border-left-color: #4CAF50; }
@@ -300,6 +302,7 @@ function calendar(){
                             converted.push({
                                 title: `${course.courseCode} - ${course.courseName}`,
                                 location: course.location || '',
+                                format: course.instructionalFormat || '',
                                 day: day,
                                 startTime: startTime,
                                 duration: duration,
