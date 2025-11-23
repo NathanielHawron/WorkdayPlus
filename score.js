@@ -9,7 +9,7 @@ function score(){
 
         let title = item[0].children[0].children[0].children[0].children[0].children[0].children[0];
         title.appendChild(button);
-        button.onclick = () =>{
+        button.onclick = async () =>{
             let string = title.children[1].innerText;
             let faculty = string.split(" ")[0];
             faculty = faculty.substring(0,faculty.length-2);
@@ -20,18 +20,15 @@ function score(){
                 section = "OVERALL";
             }
             console.log(year + "", "W", faculty, code, section);
-            getDataUBCGRADES(year-1 + "", "W", faculty, code, section);
-            getDataUBCGRADES(year-1 + "", "S", faculty, code, section);
-            getDataUBCGRADES(year-2 + "", "W", faculty, code, section);
-            getDataUBCGRADES(year-2 + "", "S", faculty, code, section);
+            console.log( await getLatestUBCGRADES(faculty,code,section));
         }
     }
 };
 
 // Example URL: https://ubcgrades.com/api/v3/grades/UBCO/2022S/MATH/100/OVERALL
-async function getDataUBCGRADES(year, term, subject, code, section){
+async function getDataUBCGRADES(year, term, faculty, code, section){
     let res;
-    await fetch('https://ubcgrades.com/api/v3/grades/UBCO/' + year + term + '/' + subject + '/' + code + '/' + section)
+    await fetch('https://ubcgrades.com/api/v3/grades/UBCO/' + year + term + '/' + faculty + '/' + code + '/' + section)
     .then(response => response.json()) // Parse the response body as JSON
     .then(data => {
         res = data;
@@ -42,11 +39,43 @@ async function getDataUBCGRADES(year, term, subject, code, section){
 }
 
 // Find latest summer and winter course data in last 5 years. If one is found, search up to one more year for the other.
-function getLatestUBCGRADES(subject, code, section){
+async function getLatestUBCGRADES(faculty, code, section){
+    let year = new Date().getYear() + 1899;
     let res = {
         "winter":null,
         "summer":null
     };
+    for (let i = year;  i >= year-5; --i){
+        if(res.winter == null && res.summer == null){
+            let dataS = await getDataUBCGRADES(i,'S',faculty,code,section);
+            let dataW = await getDataUBCGRADES(i,'W',faculty,code,section);
+            if(dataS.error != "Not Found"){
+                res.summer = dataS;
+            }
+            if(dataW.error != "Not Found"){
+                res.winter = dataW;
+            }
+            // both null
+        }else if(res.summer == null && res.winter != null){
+            //only summer null
+            let dataS = await getDataUBCGRADES(i-1,'S',faculty,code,section);
+            if(dataS.error != "Not Found"){
+                res.summer = dataS;
+            }
+            else{
+                break;
+            }
+        }else if(res.winter == null && res.summer != null){
+            let dataW = await getDataUBCGRADES(i-1,'W',faculty,code,section);
+            if(dataW.error != "Not Found"){
+                res.winter = dataW;
+            }
+            else{break;}
+            //only winyer nnull
+        }else{ 
+            break;
+        }
+    }
 
     return res;
 }
