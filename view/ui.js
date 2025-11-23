@@ -137,16 +137,32 @@ function createCourseCellHTML(course) {
 
     // 4. Extract display information
     const displayTitle = title.split(' - ')[0]; // "COSC 101 - Intro to CS" -> "COSC 101"
-    const location = course.location || course.room || '';
+    const rawLocation = course.location || course.room || '';
+    
+    // Simplify location: "Engineering, Management and Education Building (EME) Room: 1151" -> "EME 1151"
+    let shortLocation = rawLocation;
+    const buildingMatch = rawLocation.match(/\(([A-Z]+)\)\s*Room:\s*(\S+)/);
+    if (buildingMatch) {
+        shortLocation = `${buildingMatch[1]} ${buildingMatch[2]}`;
+    }
+    
+    // Calculate end time
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const endMinutes = startHour * 60 + startMin + heightInPixels;
+    const endHour = Math.floor(endMinutes / 60);
+    const endMin = endMinutes % 60;
+    const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+    const timeRange = `${startTime}-${endTime}`;
 
     // 5. Generate Inline Style (Crucial for absolute positioning)
-    // -4px creates a small separation gap between cells and prevents overflow
-    const inlineStyle = `top: ${topOffset}px; height: ${heightInPixels - 4}px; max-height: ${heightInPixels - 4}px; background-color: ${color.bg}; border-left-color: ${color.border};`; 
+    // Match exactly with grid cell size (60px per hour)
+    const inlineStyle = `top: ${topOffset}px; height: ${heightInPixels}px; max-height: ${heightInPixels}px; background-color: ${color.bg}; border-left-color: ${color.border};`; 
 
     return `
         <div class="course-cell ${subjectClass}" style="${inlineStyle}">
             <div class="course-code">${displayTitle}</div>
-            <div class="course-location">${location}</div>
+            <div class="course-location">${shortLocation}</div>
+            <div class="course-time">${timeRange}</div>
         </div>
     `;
 }

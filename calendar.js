@@ -180,85 +180,192 @@ function calendar(){
     ]).then(([uiModule, icalModule]) => {
             console.log("View module loaded successfully");
             
-            // Sample course data for Term 1
-            const term1Data = [
-                { title: 'COSC 101 - Intro to CS', location: 'ICCS 204', day: 'Mon', startTime: '09:00', duration: 90, week: 'All' },
-                { title: 'MATH 200 - Calculus I', location: 'Math 100', day: 'Mon', startTime: '11:00', duration: 60, week: 'All' },
-                { title: 'PHYS 111 - Physics I', location: 'Hennings 201', day: 'Tue', startTime: '10:00', duration: 90, week: 'All' },
-                { title: 'STAT 230 - Statistics', location: 'Math 105', day: 'Tue', startTime: '14:00', duration: 60, week: 'All' },
-                { title: 'COSC 221 - Data Structures', location: 'ICCS 204', day: 'Wed', startTime: '09:00', duration: 90, week: 'All' },
-                { title: 'ENGR 101 - Engineering Design', location: 'MCML 166', day: 'Thu', startTime: '13:00', duration: 120, week: 'All' },
-                { title: 'MATH 200 - Tutorial', location: 'Math 102', day: 'Fri', startTime: '10:00', duration: 60, week: 'All' }
-            ];
+            // Load real course data from Chrome storage
+            chrome.storage.local.get('workdayPlusCourseData', (result) => {
+                console.log("Chrome storage result:", result);
+                
+                if (!result.workdayPlusCourseData) {
+                    console.error("No course data found in storage!");
+                    calendarContent.innerHTML = `
+                        <div style="padding: 40px; text-align: center;">
+                            <h2 style="color: #e74c3c; margin-bottom: 20px;">⚠️ No Course Data Found</h2>
+                            <p style="color: #666; margin-bottom: 15px;">Please visit your Workday course list page to extract your schedule.</p>
+                            <p style="color: #999; font-size: 14px;">The extension will automatically extract your courses when you visit the course list page.</p>
+                            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: left;">
+                                <h3 style="margin-top: 0; color: #333;">How to extract your courses:</h3>
+                                <ol style="color: #666; line-height: 1.8;">
+                                    <li>Go to your Workday student portal</li>
+                                    <li>Navigate to your course list or schedule page</li>
+                                    <li>Wait a few seconds for automatic extraction</li>
+                                    <li>Open the calendar again</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const courseData = result.workdayPlusCourseData;
+                console.log("Loaded course data:", courseData);
+                
+                // Convert extracted data format to calendar format
+                const term1Data = convertToCalendarFormat(courseData.term1 || []);
+                const term2Data = convertToCalendarFormat(courseData.term2 || []);
+                
+                console.log("Converted Term 1:", term1Data);
+                console.log("Converted Term 2:", term2Data);
+                
+                if (term1Data.length === 0 && term2Data.length === 0) {
+                    calendarContent.innerHTML = `
+                        <div style="padding: 40px; text-align: center;">
+                            <h2 style="color: #e74c3c; margin-bottom: 20px;">⚠️ No Courses Found</h2>
+                            <p style="color: #666;">Course data was found but no courses could be parsed.</p>
+                            <p style="color: #999; font-size: 14px;">Please visit your Workday course list page again.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Current state
+                let currentTerm = 'term1';
+                let currentWeek = 'A';
+                
+                // Get current term data
+                function getCurrentData() {
+                    return currentTerm === 'term1' ? term1Data : term2Data;
+                }
+                
+                initializeCalendar(uiModule, icalModule, getCurrentData, () => currentTerm, (term) => { currentTerm = term; }, currentWeek);
+            });
             
-            // Sample course data for Term 2
-            const term2Data = [
-                { title: 'COSC 222 - Algorithms', location: 'ICCS 204', day: 'Mon', startTime: '10:00', duration: 90, week: 'All' },
-                { title: 'DATA 301 - Data Science', location: 'ICCS 206', day: 'Mon', startTime: '14:00', duration: 90, week: 'All' },
-                { title: 'MATH 221 - Calculus II', location: 'Math 100', day: 'Tue', startTime: '09:00', duration: 60, week: 'All' },
-                { title: 'CHEM 121 - Chemistry', location: 'Chem D200', day: 'Wed', startTime: '11:00', duration: 90, week: 'All' },
-                { title: 'STAT 231 - Statistics II', location: 'Math 105', day: 'Thu', startTime: '10:00', duration: 60, week: 'All' },
-                { title: 'ENGR 202 - Engineering', location: 'MCML 166', day: 'Thu', startTime: '14:00', duration: 120, week: 'All' },
-                { title: 'DATA 301 - Lab', location: 'ICCS 208', day: 'Fri', startTime: '13:00', duration: 90, week: 'All' }
-            ];
-            
-            // Current state
-            let currentTerm = 'term1';
-            let currentWeek = 'A';
-            
-            // Get current term data
-            function getCurrentData() {
-                return currentTerm === 'term1' ? term1Data : term2Data;
-            }
-            
-            // Render the calendar with initial data
-            uiModule.renderCalendar(getCurrentData(), currentWeek, currentTerm);
-            
-            // Function to setup tabs (will be called after each render)
-            function setupTabs() {
-                console.log("Setting up term tabs...");
-                uiModule.setupTermTabs((term) => {
-                    console.log("Term selected:", term);
-                    currentTerm = term;
-                    // Re-render with new term data
-                    uiModule.renderCalendar(getCurrentData(), currentWeek, currentTerm);
-                    // Re-attach event listeners after re-render
-                    setTimeout(setupTabs, 50);
-                    setTimeout(setupExport, 50);
-                });
-                console.log("Term tabs setup complete");
-            }
-            
-            // Function to setup calendar export
-            function setupExport() {
-                console.log("Setting up calendar export...");
-                uiModule.setupGoogleCalendarExport(async () => {
+            /**
+             * Convert extracted course data to calendar format
+             * Input: { courseCode, courseName, schedule, location, ... }
+             * Output: { title, location, day, startTime, duration, week }
+             */
+            function convertToCalendarFormat(courses) {
+                const converted = [];
+                
+                courses.forEach(course => {
                     try {
-                        // Get term info (adjust dates as needed)
-                        const termInfo = {
-                            term: currentTerm,
-                            startDate: currentTerm === 'term1' ? '2024-09-01' : '2025-01-01',
-                            endDate: currentTerm === 'term1' ? '2024-12-31' : '2025-04-30'
+                        // Parse schedule: "MWF 10:00-11:00" or "TR 14:00-15:30"
+                        const schedule = course.schedule || '';
+                        if (!schedule || schedule === 'TBA') {
+                            console.warn(`Skipping course ${course.courseCode}: No schedule`);
+                            return;
+                        }
+                        
+                        // Extract days and time
+                        const parts = schedule.split(' ');
+                        if (parts.length < 2) {
+                            console.warn(`Invalid schedule format for ${course.courseCode}: ${schedule}`);
+                            return;
+                        }
+                        
+                        const daysStr = parts[0]; // "MWF" or "TR"
+                        const timeStr = parts[1]; // "10:00-11:00"
+                        
+                        // Parse time
+                        const timeParts = timeStr.split('-');
+                        if (timeParts.length !== 2) {
+                            console.warn(`Invalid time format for ${course.courseCode}: ${timeStr}`);
+                            return;
+                        }
+                        
+                        const startTime = timeParts[0]; // "10:00"
+                        const endTime = timeParts[1];   // "11:00"
+                        
+                        // Calculate duration in minutes
+                        const [startHour, startMin] = startTime.split(':').map(Number);
+                        const [endHour, endMin] = endTime.split(':').map(Number);
+                        const duration = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+                        
+                        // Convert day codes to full names
+                        const dayMap = {
+                            'M': 'Mon',
+                            'T': 'Tue',
+                            'W': 'Wed',
+                            'R': 'Thu',
+                            'F': 'Fri'
                         };
                         
-                        const results = icalModule.exportToICalendar(getCurrentData(), termInfo);
+                        // Create a course entry for each day
+                        for (const dayCode of daysStr) {
+                            const day = dayMap[dayCode];
+                            if (!day) {
+                                console.warn(`Unknown day code: ${dayCode}`);
+                                continue;
+                            }
+                            
+                            converted.push({
+                                title: `${course.courseCode} - ${course.courseName}`,
+                                location: course.location || '',
+                                day: day,
+                                startTime: startTime,
+                                duration: duration,
+                                week: 'All'
+                            });
+                        }
                         
-                        alert(`✅ Downloaded ${results.success} courses!\n\nImport the .ics file to:\n• Google Calendar\n• Apple Calendar\n• Outlook\n• Any calendar app`);
                     } catch (error) {
-                        console.error("Export error:", error);
-                        alert('❌ Failed to export calendar. Please check console for details.');
+                        console.error(`Error converting course ${course.courseCode}:`, error);
                     }
                 });
-                console.log("Calendar export setup complete");
+                
+                return converted;
             }
             
-            // Initial setup
-            setTimeout(setupTabs, 100);
-            setTimeout(setupExport, 100);
+            function initializeCalendar(uiModule, icalModule, getCurrentData, getCurrentTerm, setCurrentTerm, currentWeek) {
+            
+                // Render the calendar with initial data
+                uiModule.renderCalendar(getCurrentData(), currentWeek, getCurrentTerm());
+                
+                // Function to setup tabs (will be called after each render)
+                function setupTabs() {
+                    console.log("Setting up term tabs...");
+                    uiModule.setupTermTabs((term) => {
+                        console.log("Term selected:", term);
+                        setCurrentTerm(term);
+                        // Re-render with new term data
+                        uiModule.renderCalendar(getCurrentData(), currentWeek, getCurrentTerm());
+                        // Re-attach event listeners after re-render
+                        setTimeout(setupTabs, 50);
+                        setTimeout(setupExport, 50);
+                    });
+                    console.log("Term tabs setup complete");
+                }
+                
+                // Function to setup calendar export
+                function setupExport() {
+                    console.log("Setting up calendar export...");
+                    uiModule.setupGoogleCalendarExport(async () => {
+                        try {
+                            // Get term info (adjust dates as needed)
+                            const termInfo = {
+                                term: getCurrentTerm(),
+                                startDate: getCurrentTerm() === 'term1' ? '2024-09-01' : '2025-01-01',
+                                endDate: getCurrentTerm() === 'term1' ? '2024-12-31' : '2025-04-30'
+                            };
+                            
+                            const results = icalModule.exportToICalendar(getCurrentData(), termInfo);
+                            
+                            alert(`✅ Downloaded ${results.success} courses!\n\nImport the .ics file to:\n• Google Calendar\n• Apple Calendar\n• Outlook\n• Any calendar app`);
+                        } catch (error) {
+                            console.error("Export error:", error);
+                            alert('❌ Failed to export calendar. Please check console for details.');
+                        }
+                    });
+                    console.log("Calendar export setup complete");
+                }
+                
+                // Initial setup
+                setTimeout(setupTabs, 100);
+                setTimeout(setupExport, 100);
+            }
         })
         .catch(error => {
             console.error("Error loading view module:", error);
-            calendarContent.innerHTML = '<p style="color: red; padding: 20px;">Error loading calendar view</p>';
+            calendarContent.innerHTML = '<p style="color: red; padding: 20px;">Error loading calendar view. Please check console for details.</p>';
         });
     
     } catch (error) {

@@ -92,6 +92,14 @@
                     }
                 }
                 
+                // Extract start date from schedule if not already set
+                if (!startDate && schedule) {
+                    const dateMatch = schedule.match(/^(\d{4}-\d{2}-\d{2})/);
+                    if (dateMatch) {
+                        startDate = dateMatch[1];
+                    }
+                }
+                
                 // Normalize schedule to calendar format
                 const normalizedSchedule = normalizeSchedule(schedule);
                 
@@ -106,7 +114,7 @@
                 };
                 
                 courses.push(course);
-                console.log(`[Extract] ✓ Extracted course ${courseIndex}:`, courseCode, normalizedSchedule);
+                console.log(`[Extract] ✓ Extracted course ${courseIndex}:`, courseCode, normalizedSchedule, `(start: ${startDate})`);
                 
             } catch (error) {
                 console.error(`[Extract] ❌ Error extracting course ${courseIndex}:`, error);
@@ -118,8 +126,8 @@
 
     /**
      * Converts Workday schedule format to calendar format
-     * Input: "Tue | 2:00 p.m. - 4:00 p.m." or "Wed Fri | 11:00 a.m. - 12:30 p.m."
-     * Output: "TR 14:00-16:00" or "WF 11:00-12:30"
+     * Input: "2025-09-02 - 2025-11-05 | Mon Wed | 12:30 p.m. - 2:00 p.m."
+     * Output: "MW 12:30-14:00"
      */
     function normalizeSchedule(workdaySchedule) {
         if (!workdaySchedule || workdaySchedule === 'TBA') {
@@ -136,14 +144,16 @@
                 'Fri': 'F', 'Friday': 'F'
             };
             
-            // Extract days and time
+            // Extract days and time from format: "2025-09-02 - 2025-11-05 | Mon Wed | 12:30 p.m. - 2:00 p.m."
             const parts = workdaySchedule.split('|').map(p => p.trim());
-            if (parts.length < 2) {
-                return workdaySchedule; // Return as-is if can't parse
+            
+            if (parts.length < 3) {
+                console.warn('[Extract] Invalid schedule format:', workdaySchedule);
+                return 'TBA';
             }
             
-            const daysStr = parts[0]; // "Tue" or "Wed Fri"
-            const timeStr = parts[1]; // "2:00 p.m. - 4:00 p.m."
+            const daysStr = parts[1]; // "Mon Wed" or "Tue Thu"
+            const timeStr = parts[2]; // "12:30 p.m. - 2:00 p.m."
             
             // Convert days
             const days = daysStr.split(/\s+/).map(day => dayMap[day] || day).join('');
@@ -151,7 +161,8 @@
             // Convert time from 12-hour to 24-hour format
             const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(a\.m\.|p\.m\.)\s*-\s*(\d{1,2}):(\d{2})\s*(a\.m\.|p\.m\.)/i);
             if (!timeMatch) {
-                return `${days} ${timeStr}`; // Return with days if can't parse time
+                console.warn('[Extract] Could not parse time:', timeStr);
+                return `${days} TBA`;
             }
             
             let startHour = parseInt(timeMatch[1]);
@@ -175,47 +186,65 @@
             
         } catch (error) {
             console.error('[Extract] Error normalizing schedule:', error);
-            return workdaySchedule;
+            return 'TBA';
         }
     }
 
     /**
      * Splits courses into Term 1 and Term 2 based on start dates
+     * Term 1 (Fall): September - December
+     * Term 2 (Winter): January - April
      * @param {Array<object>} courses - Array of course objects
      * @returns {object} Object with term1 and term2 arrays
      */
     function splitIntoTerms(courses) {
         console.log('[Extract] Splitting courses into terms...');
         
-        // Determine term boundary (typically end of December)
-        const currentYear = new Date().getFullYear();
-        const termBoundary = new Date(`${currentYear}-12-31`);
-        
         const term1 = [];
         const term2 = [];
         
         courses.forEach(course => {
-            if (course.startDate) {
-                try {
-                    const startDate = new Date(course.startDate);
-                    
-                    if (startDate <= termBoundary) {
-                        term1.push(course);
-                    } else {
-                        term2.push(course);
+            try {
+                // Extract start date from schedule: "2025-09-02 - 2025-11-05 | ..."
+                let startDateStr = course.startDate;
+                
+                if (!startDateStr && course.schedule) {
+                    const dateMatch = course.schedule.match(/^(\d{4}-\d{2}-\d{2})/);
+                    if (dateMatch) {
+                        startDateStr = dateMatch[1];
                     }
-                } catch (error) {
-                    console.warn(`[Extract] ⚠️ Could not parse date for ${course.courseCode}, adding to Term 1`);
+                }
+                
+                if (startDateStr) {
+                    const startDate = new Date(startDateStr);
+                    const month = startDate.getMonth() + 1; // 1-12
+                    
+                    // Term 1 (Fall): May (5) - December (12)
+                    // Term 2 (Winter): January (1) - April (4), July (7) - August (8)
+                    if ((month >= 5 && month <= 6) || (month >= 9 && month <= 12)) {
+                        term1.push(course);
+                        console.log(`[Extract] ${course.courseCode} → Term 1 (month: ${month})`);
+                    } else if ((month >= 1 && month <= 4) || (month >= 7 && month <= 8)) {
+                        term2.push(course);
+                        console.log(`[Extract] ${course.courseCode} → Term 2 (month: ${month})`);
+                    } else {
+                        // Fallback (shouldn't happen)
+                        term1.push(course);
+                        console.log(`[Extract] ${course.courseCode} → Term 1 (fallback, month: ${month})`);
+                    }
+                } else {
+                    // No date found, default to Term 1
+                    console.warn(`[Extract] ⚠️ No date for ${course.courseCode}, adding to Term 1`);
                     term1.push(course);
                 }
-            } else {
-                // If no start date, default to Term 1
+            } catch (error) {
+                console.error(`[Extract] Error processing ${course.courseCode}:`, error);
                 term1.push(course);
             }
         });
         
-        console.log(`[Extract] ✓ Term 1: ${term1.length} courses`);
-        console.log(`[Extract] ✓ Term 2: ${term2.length} courses`);
+        console.log(`[Extract] ✓ Term 1 (Fall): ${term1.length} courses`);
+        console.log(`[Extract] ✓ Term 2 (Winter): ${term2.length} courses`);
         
         return { term1, term2 };
     }
