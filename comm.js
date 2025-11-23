@@ -1,6 +1,5 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("=== MESSAGE RECEIVED ===", message);
-    
+    console.log("test");
     if(message.action == "score"){
         console.log("Calling score()");
         score();
