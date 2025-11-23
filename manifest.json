@@ -8,10 +8,20 @@
         "default_popup":"main.html",
         "default_icon":"favicon.png"
     },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "activeTab",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://okanagan.calendar.ubc.ca/*"
+    ],
     "content_scripts": [
     {
       "js": [
-        "score.js","calendar.js","comm.js"
+        "score.js","calendar.js","registrationGuide.js","comm.js"
       ],
       "matches": [
         "https://wd10.myworkday.com/ubc/d/*"
