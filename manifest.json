@@ -19,7 +19,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["view/ui.js", "view/design.css"],
+      "resources": ["view/ui.js", "view/design.css", "view/googleCalendar.js"],
       "matches": ["https://wd10.myworkday.com/*"]
     }
   ]

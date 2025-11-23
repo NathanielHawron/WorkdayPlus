@@ -12,24 +12,29 @@
     justify-content: center; 
     margin-bottom: 15px;
     border-bottom: 2px solid #eee;
+    position: relative;
+    z-index: 100;
 }
 
 /* Individual tab button style */
 .term-tabs button {
     background: none;
     border: none;
-    padding: 10px 15px;
+    padding: 14px 30px;
     margin: 0 5px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 16px;
     color: #666;
     transition: color 0.2s, border-bottom 0.2s;
+    position: relative;
+    z-index: 101;
 }
 
 /* Active tab design */
 .term-tabs button.active {
-    color: #007bff; /* Workday's primary blue color for emphasis */
-    border-bottom: 2px solid #007bff;
+    color: #007bff !important;
+    border-bottom: 3px solid #007bff !important;
 }
 
 /* Calendar table base style */
@@ -37,58 +42,65 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed; 
-    position: relative; /* Reference point for absolute positioning of course cells */
+    position: relative;
 }
 
 /* Header and cell borders */
 .calendar-grid th, .calendar-grid td {
-    border: 1px solid #eee;
-    height: 60px; /* 60px per hour - agreed height between CSS and JS */
+    border: 1px solid #ddd;
+    height: 60px;
     padding: 0;
     vertical-align: top;
 }
 
 /* Day header design */
 .calendar-grid th {
-    background-color: #f0f0f0;
+    background-color: #f8f9fa;
     color: #333;
     text-align: center;
-    padding: 8px 0;
+    padding: 16px 0;
+    font-size: 18px;
+    font-weight: 700;
+    border-right: 2px solid #ddd;
 }
 
 /* Time label design */
 .time-label {
-    width: 60px; 
-    padding: 5px;
-    background-color: #fdfdfd;
-    font-weight: 500;
-    text-align: right;
-    vertical-align: top;
-    font-size: 11px;
-    color: #888;
+    width: 100px; 
+    padding: 10px;
+    background-color: #f8f9fa;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 16px;
+    color: #333;
+    border-right: 2px solid #ddd;
 }
 
-/* Day cell where course cells will be positioned (Absolute Positioning reference) */
+/* Day cell where course cells will be positioned */
 .day-cell {
     position: relative; 
-    height: auto; 
+    height: 60px;
+    overflow: hidden;
+    border-right: 1px solid #e0e0e0;
 }
 
 /* Course cell base style */
 .course-cell {
-    /* Absolute Positioning: Float within day cell */
     position: absolute; 
-    width: 98%; 
-    left: 1%;
+    width: calc(100% - 6px);
+    left: 3px;
     z-index: 10; 
     
-    padding: 5px 8px;
+    padding: 6px 8px;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+    border-left: 4px solid;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); 
     color: #333;
     cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s;
-    overflow: hidden; 
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 /* Hover effect */
@@ -104,7 +116,7 @@
     margin-bottom: 2px;
 }
 .course-location {
-    font-size: 10px;
+    font-size: 11px;
     color: #666;
 }
 
@@ -113,69 +125,54 @@
     background-color: #e6f7ff; 
     border-left-color: #007bff; 
 } 
-/* DATA (Data Science) */
 .subj-DATA { 
     background-color: #fff3e0; 
     border-left-color: #ff9800; 
 }
-/* ENGR (Engineering) */
 .subj-ENGR { 
     background-color: #ffe0e6; 
     border-left-color: #e91e63; 
 }
-/* ELEC (Electrical Engineering) */
 .subj-ELEC { 
     background-color: #f3e5f5; 
     border-left-color: #9c27b0; 
 }
-
-/* MATH (Mathematics) */
 .subj-MATH { 
     background-color: #f0fff0; 
     border-left-color: #4CAF50; 
 }
-/* STAT (Statistics) */
 .subj-STAT { 
     background-color: #e8f5e9; 
     border-left-color: #8bc34a; 
 }
-/* PHYS (Physics) */
 .subj-PHYS { 
     background-color: #fbe9e7; 
     border-left-color: #ff5722; 
 }
-/* CHEM (Chemistry) */
 .subj-CHEM { 
     background-color: #e0f7fa; 
     border-left-color: #00bcd4; 
 }
-/* BIOL (Biology) */
 .subj-BIOL { 
     background-color: #fce4ec; 
     border-left-color: #e91e63; 
 }
-
-/* MGMT (Management) */
 .subj-MGMT { 
     background-color: #fffde7; 
     border-left-color: #ffeb3b; 
 }
-/* ECON (Economics) */
 .subj-ECON { 
     background-color: #f3e5f5; 
     border-left-color: #673ab7; 
 }
-/* PSYO (Psychology) */
 .subj-PSYO { 
     background-color: #fafafa; 
     border-left-color: #9e9e9e; 
 }
-/* SOCI (Sociology) */
 .subj-SOCI { 
     background-color: #f9fbe7; 
     border-left-color: #cddc39; 
 }
-/* ENGL (English) */
 .subj-ENGL { 
     background-color: #fbe0e6; 
     border-left-color: #f44336; 
