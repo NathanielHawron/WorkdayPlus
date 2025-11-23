@@ -7,10 +7,13 @@
         "default_popup":"main.html",
         "default_icon":"favicon.png"
     },
+    "permissions": [
+        "storage"
+    ],
     "content_scripts": [
     {
       "js": [
-        "score.js","calendar.js","comm.js"
+        "load-test-data.js","extract-courses.js","score.js","calendar.js","comm.js"
       ],
       "matches": [
         "https://wd10.myworkday.com/ubc/d/*"
