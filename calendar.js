@@ -1,10 +1,4 @@
-console.log("calendar.js loaded successfully");
-alert("WorkdayPlus: calendar.js loaded!");
-
 function calendar(){
-    console.log("=== CALENDAR FUNCTION CALLED ===");
-    console.log("Running calendar - creating popup");
-    
     try {
     
     // Check if popup already exists
