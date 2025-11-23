@@ -3,18 +3,16 @@ let calendar = document.getElementById("CalendarEnable");
 let registrationGuide = document.getElementById("RegistrationGuideEnable");
 
 score.onclick = async ()=>{
+    score.disabled = true;
     let [tab] = await chrome.tabs.query({active:true, currentWindow:true});
     chrome.tabs.sendMessage(tab.id, {action:"score"}, (res)=>{
-        alert(res);
     })
 }
 
 calendar.onclick = async ()=>{
+    calendar.disabled = true;
     let [tab] = await chrome.tabs.query({active:true, currentWindow:true});
     chrome.tabs.sendMessage(tab.id, {action:"calendar"}, (res)=>{
-        if(res && res.status){
-            console.log("Calendar opened:", res.status);
-        }
     })
 }
 
