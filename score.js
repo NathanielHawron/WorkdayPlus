@@ -29,14 +29,24 @@ function score(){
 };
 
 // Example URL: https://ubcgrades.com/api/v3/grades/UBCO/2022S/MATH/100/OVERALL
-function getDataUBCGRADES(year, term, subject, code, section){
-        fetch('https://ubcgrades.com/api/v3/grades/UBCO/' + year + term + '/' + subject + '/' + code + '/' + section)
-        .then(response => response.json()) // Parse the response body as JSON
-        .then(data => {
-            // Data is now available as a JavaScript object
-            console.log(data);
-            alert(JSON.stringify(data));
-             // Call a function to display the data
-        })
-        .catch(error => console.error('Error fetching data:', error));
+async function getDataUBCGRADES(year, term, subject, code, section){
+    let res;
+    await fetch('https://ubcgrades.com/api/v3/grades/UBCO/' + year + term + '/' + subject + '/' + code + '/' + section)
+    .then(response => response.json()) // Parse the response body as JSON
+    .then(data => {
+        res = data;
+    })
+    .catch(error => console.error('Error fetching data:', error));
+
+    return res;
+}
+
+// Find latest summer and winter course data in last 5 years. If one is found, search up to one more year for the other.
+function getLatestUBCGRADES(subject, code, section){
+    let res = {
+        "winter":null,
+        "summer":null
+    };
+
+    return res;
 }
