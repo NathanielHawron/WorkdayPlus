@@ -1,57 +1,5 @@
 console.log("registrationGuide.js loaded successfully");
 
-// Add a floating button on the Workday page for easy access
-function addRegistrationGuideButton() {
-    // Check if button already exists
-    if (document.getElementById('wdp-floating-guide-btn')) {
-        return;
-    }
-    
-    const floatingBtn = document.createElement('button');
-    floatingBtn.id = 'wdp-floating-guide-btn';
-    floatingBtn.textContent = '📚 Course Guide';
-    floatingBtn.style.position = 'fixed';
-    floatingBtn.style.bottom = '20px';
-    floatingBtn.style.right = '20px';
-    floatingBtn.style.zIndex = '999998';
-    floatingBtn.style.padding = '12px 20px';
-    floatingBtn.style.backgroundColor = '#0055b7';
-    floatingBtn.style.color = '#ffffff';
-    floatingBtn.style.border = 'none';
-    floatingBtn.style.borderRadius = '25px';
-    floatingBtn.style.fontSize = '14px';
-    floatingBtn.style.fontWeight = '600';
-    floatingBtn.style.cursor = 'pointer';
-    floatingBtn.style.boxShadow = '0 4px 12px rgba(0, 85, 183, 0.4)';
-    floatingBtn.style.transition = 'all 0.3s ease';
-    
-    floatingBtn.onmouseover = () => {
-        floatingBtn.style.backgroundColor = '#003d82';
-        floatingBtn.style.transform = 'scale(1.05)';
-        floatingBtn.style.boxShadow = '0 6px 16px rgba(0, 85, 183, 0.5)';
-    };
-    
-    floatingBtn.onmouseout = () => {
-        floatingBtn.style.backgroundColor = '#0055b7';
-        floatingBtn.style.transform = 'scale(1)';
-        floatingBtn.style.boxShadow = '0 4px 12px rgba(0, 85, 183, 0.4)';
-    };
-    
-    floatingBtn.onclick = () => {
-        registrationGuide();
-    };
-    
-    document.body.appendChild(floatingBtn);
-    console.log("Floating registration guide button added");
-}
-
-// Add the button when the page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addRegistrationGuideButton);
-} else {
-    addRegistrationGuideButton();
-}
-
 // Global variables to track current selection
 let currentFaculty = null;
 let currentMajor = null;
